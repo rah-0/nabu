@@ -18,6 +18,7 @@ func New() *Logger {
 func FromError(e error) *Logger {
 	x := New()
 	x.origin = originError
+	x.Level = LevelError
 	if e == nil {
 		return x
 	}
@@ -34,6 +35,7 @@ func FromError(e error) *Logger {
 func FromMessage(msg string) *Logger {
 	x := New()
 	x.origin = originMessage
+	x.Level = LevelInfo
 	x.Msg = msg
 	return x
 }
