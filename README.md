@@ -15,6 +15,8 @@ With `nabu`, logs can:
 go get github.com/rah-0/nabu
 ```
 
+## Usage
+
 ### Basic Logging
 
 ```go
