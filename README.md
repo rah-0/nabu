@@ -1,3 +1,6 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/rah-0/nabu)](https://goreportcard.com/report/github.com/rah-0/nabu)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # nabu
 `nabu` is a **structured logging library** for Go that provides **error tracking**, **log levels**, and **traceable logs** without requiring external dependencies.
 
@@ -19,15 +22,12 @@ func main() {
     nabu.SetLogLevel(nabu.LevelDebug) // Set log level
     nabu.SetLogOutput(nabu.OutputStdout) // Log to stdout
 
-    nabu.FromMessage("Starting application").
-        WithArgs("version", "1.0.0").
-        WithLevelInfo().
-        Log()
+    nabu.FromMessage("Starting application").WithArgs("version", "1.0.0").WithLevelInfo().Log()
 }
 ```
 Log output:
 ```json
-{"UUID":"f95a630a-94dd-444e-a749-40a2864ba32c","Date":"2025-02-10 14:52:07.624683","Args":["version","1.0.0"],"Msg":"Starting application","Function":"github.com/rah-0/nabu.TestSomething","Line":25,"Level":1}
+{"UUID":"f95a630a-94dd-444e-a749-40a2864ba32c","Date":"2025-02-10 14:52:07.624683","Args":["version","1.0.0"],"Msg":"Starting application","Function":"github.com/rah-0/nabu.TestSomething","Line":5,"Level":1}
 ```
 
 ### Logging Errors with Stack Traces
@@ -38,16 +38,13 @@ func process() error {
 func main() {
     err := process()
     if err != nil {
-        nabu.FromError(err).
-            WithArgs("operation", "database").
-            WithLevelError().
-            Log()
+        nabu.FromError(err).WithArgs("operation", "database").WithLevelError().Log()
     }
 }
 ```
 Log output:
 ```json
-{"UUID":"14e37d51-2420-44f7-a7aa-403c13a048f0","Date":"2025-02-10 14:55:14.992355","Error":"Something went wrong","Args":["operation","database"],"Function":"github.com/rah-0/nabu.TestSomething","Line":30,"Level":3}
+{"UUID":"14e37d51-2420-44f7-a7aa-403c13a048f0","Date":"2025-02-10 14:55:14.992355","Error":"Something went wrong","Args":["operation","database"],"Function":"github.com/rah-0/nabu.TestSomething","Line":7,"Level":3}
 ```
 
 ### Logging a Full Stack Trace chain
