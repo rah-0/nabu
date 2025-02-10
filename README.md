@@ -21,15 +21,14 @@ go get github.com/rah-0/nabu
 
 ```go
 func main() {
-    nabu.SetLogLevel(nabu.LevelDebug) // Set log level
-    nabu.SetLogOutput(nabu.OutputStdout) // Log to stdout
-
+    nabu.SetLogLevel(nabu.LevelDebug)
+	
     nabu.FromMessage("Starting application").WithArgs("version", "1.0.0").WithLevelInfo().Log()
 }
 ```
 Log output:
 ```json
-{"UUID":"f95a630a-94dd-444e-a749-40a2864ba32c","Date":"2025-02-10 14:52:07.624683","Args":["version","1.0.0"],"Msg":"Starting application","Function":"github.com/rah-0/nabu.TestSomething","Line":5,"Level":1}
+{"UUID":"f95a630a-94dd-444e-a749-40a2864ba32c","Date":"2025-02-10 14:52:07.624683","Args":["version","1.0.0"],"Msg":"Starting application","Function":"github.com/rah-0/nabu.TestSomething","Line":4,"Level":1}
 ```
 
 ### Logging Errors with Stack Traces
