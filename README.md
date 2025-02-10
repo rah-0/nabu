@@ -5,7 +5,7 @@
 `nabu` is a **structured logging library** for Go that provides **error tracking**, **log levels**, and **traceable logs** without requiring external dependencies.
 
 With `nabu`, logs can:
-- **Propagate errors automatically** while preserving their stack trace.
+- **Propagate errors** while preserving their stack trace.
 - **Attach structured metadata** to errors using `WithArgs()`.
 - **Support multiple log outputs** (stdout, stderr).
 
