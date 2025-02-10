@@ -10,9 +10,7 @@ import (
 )
 
 func New() *Logger {
-	return &Logger{
-		UUID: uuid.NewString(),
-	}
+	return &Logger{}
 }
 
 func FromError(e error) *Logger {
@@ -24,9 +22,13 @@ func FromError(e error) *Logger {
 	}
 
 	x.CausedBy = e
+	x.enableStackTrace = true
+
 	var ex *Logger
 	if errors.As(e, &ex) {
 		x.UUID = ex.UUID
+	} else {
+		x.UUID = uuid.NewString()
 	}
 
 	return x
@@ -75,6 +77,11 @@ func (x *Logger) WithLevelFatal() *Logger {
 	return x
 }
 
+func (x *Logger) EnableStackTrace() *Logger {
+	x.enableStackTrace = true
+	return x
+}
+
 func (x *Logger) Error() string {
 	if x.CausedBy != nil {
 		return x.CausedBy.Error()
@@ -91,18 +98,18 @@ func (x *Logger) Log() error {
 		return x
 	}
 
-	fn, l := x.getFirstTrace()
 	o := Output{
-		UUID:     x.UUID,
-		Date:     getDate(),
-		Args:     x.Args,
-		Msg:      x.Msg,
-		Function: fn,
-		Line:     l,
-		Level:    x.Level,
+		UUID:  x.UUID,
+		Date:  getDate(),
+		Args:  x.Args,
+		Msg:   x.Msg,
+		Level: x.Level,
 	}
 	if x.CausedBy != nil {
 		o.Error = x.CausedBy.Error()
+	}
+	if x.enableStackTrace {
+		o.Function, o.Line = x.getFirstTrace()
 	}
 
 	log := toJson(o)

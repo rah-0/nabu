@@ -36,14 +36,14 @@ func toJson(targetObject any) (output string) {
 }
 
 func (x *Logger) getFirstTrace() (string, int) {
-	programCounters := make([]uintptr, 1)
-	callersCount := runtime.Callers(3, programCounters) // Ignore: runtime.Callers, getFirstTrace, Log
+	f := make([]uintptr, 1)
+	callersCount := runtime.Callers(3, f) // Ignore: runtime.Callers, getFirstTrace, Log
 
 	if callersCount == 0 {
 		return "", 0
 	}
 
-	frames := runtime.CallersFrames(programCounters)
+	frames := runtime.CallersFrames(f)
 	frame, _ := frames.Next()
 	return frame.Function, frame.Line
 }

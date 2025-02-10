@@ -94,7 +94,7 @@ func d(s string) error {
 func TestFromMessageSimple(t *testing.T) {
 	msg := "This is a test message"
 
-	FromMessage(msg).WithArgs("test_arg").Log()
+	FromMessage(msg).WithArgs("test_arg").EnableStackTrace().Log()
 
 	expectedError := ""
 	expectedLine := 97

@@ -40,5 +40,7 @@ type Logger struct {
 	Msg      string
 	Args     any
 	Level    LogLevel
-	origin   int
+
+	origin           int
+	enableStackTrace bool
 }
