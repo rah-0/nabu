@@ -89,6 +89,10 @@ func (x *Logger) Error() string {
 	return ""
 }
 
+func (x *Logger) Unwrap() error {
+	return x.CausedBy
+}
+
 func (x *Logger) Log() error {
 	if !shouldLog(x.Level) {
 		return x
