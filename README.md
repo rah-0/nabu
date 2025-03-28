@@ -1,6 +1,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rah-0/nabu)](https://goreportcard.com/report/github.com/rah-0/nabu)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<a href="https://www.buymeacoffee.com/rah.0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-orange.png" alt="Buy Me A Coffee" height="50"></a>
+
 # nabu
 `nabu` is a **structured logging library** for Go that provides **error tracking**, **log levels**, and **traceable logs** without requiring external dependencies.
 
@@ -84,3 +86,9 @@ Log output:
 {"UUID":"0a1feb11-b250-4790-bad9-3a187df6f0f6","Date":"2025-02-10 21:15:24.790412","Error":"database connection failed","Args":[42,"delete_account"],"Function":"github.com/rah-0/nabu.functionB","Line":9,"Level":3}
 {"UUID":"0a1feb11-b250-4790-bad9-3a187df6f0f6","Date":"2025-02-10 21:15:24.790458","Error":"database connection failed","Function":"github.com/rah-0/nabu.functionA","Line":17,"Level":3}
 ```
+
+# ☕ Support
+Enjoying nabu?
+If it saved you time or brought value to your project, feel free to show some support. Every bit is appreciated 🙂
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://www.buymeacoffee.com/rah.0)
