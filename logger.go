@@ -9,10 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// New creates a new empty Logger instance.
 func New() *Logger {
 	return &Logger{}
 }
 
+// FromError creates a Logger instance from an error.
+// If the error is nil, an empty Logger is returned.
+// If the error is a *Logger, its UUID is preserved to maintain the error chain.
+// Otherwise, a new UUID is generated for tracking related logs.
 func FromError(e error) *Logger {
 	x := New()
 	x.origin = originError
@@ -34,6 +39,8 @@ func FromError(e error) *Logger {
 	return x
 }
 
+// FromMessage creates a Logger instance from a message string.
+// The default log level is set to LevelInfo.
 func FromMessage(msg string) *Logger {
 	x := New()
 	x.origin = originMessage
@@ -42,46 +49,58 @@ func FromMessage(msg string) *Logger {
 	return x
 }
 
+// WithArgs attaches structured data to the log entry.
+// This data will be serialized as part of the JSON output.
 func (x *Logger) WithArgs(args ...any) *Logger {
 	x.Args = args
 	return x
 }
 
+// WithMessage sets or updates the log message.
 func (x *Logger) WithMessage(msg string) *Logger {
 	x.Msg = msg
 	return x
 }
 
+// WithLevelDebug sets the log level to Debug.
 func (x *Logger) WithLevelDebug() *Logger {
 	x.Level = LevelDebug
 	return x
 }
 
+// WithLevelInfo sets the log level to Info.
 func (x *Logger) WithLevelInfo() *Logger {
 	x.Level = LevelInfo
 	return x
 }
 
+// WithLevelWarn sets the log level to Warning.
 func (x *Logger) WithLevelWarn() *Logger {
 	x.Level = LevelWarn
 	return x
 }
 
+// WithLevelError sets the log level to Error.
 func (x *Logger) WithLevelError() *Logger {
 	x.Level = LevelError
 	return x
 }
 
+// WithLevelFatal sets the log level to Fatal.
 func (x *Logger) WithLevelFatal() *Logger {
 	x.Level = LevelFatal
 	return x
 }
 
+// EnableStackTrace forces inclusion of stack trace information (function name and line number).
+// By default, stack traces are only enabled for error logs.
 func (x *Logger) EnableStackTrace() *Logger {
 	x.enableStackTrace = true
 	return x
 }
 
+// Error implements the error interface to allow using Logger as an error.
+// Returns the underlying error message or empty string if no error is present.
 func (x *Logger) Error() string {
 	if x.CausedBy != nil {
 		return x.CausedBy.Error()
@@ -89,10 +108,17 @@ func (x *Logger) Error() string {
 	return ""
 }
 
+// Unwrap implements the unwrappable interface to allow error chain inspection.
+// Returns the underlying error that was logged.
 func (x *Logger) Unwrap() error {
 	return x.CausedBy
 }
 
+// Log outputs the log entry and returns itself as an error.
+// This method checks if the log level is enabled before writing the log.
+// If the log originates from an error but no error is set, nothing is logged.
+// The log entry includes timestamp, UUID, message/error, arguments and stack trace if enabled.
+// The output is directed to the configured output destination (stderr by default).
 func (x *Logger) Log() error {
 	if !shouldLog(x.Level) {
 		return x
