@@ -1,5 +1,9 @@
 package nabu
 
+import (
+	"time"
+)
+
 // LogLevel defines the severity of a log entry.
 type LogLevel int
 
@@ -35,6 +39,8 @@ const (
 	originMessage
 )
 
+const TimeLayout = "2006-01-02 15:04:05.000000"
+
 // Output represents the JSON structure of a log entry.
 type Output struct {
 	UUID     string   `json:",omitempty"` // Unique identifier for tracking related log entries
@@ -57,4 +63,20 @@ type Logger struct {
 
 	origin           int  // Whether the log originated from an error or message
 	enableStackTrace bool // Whether to include stack trace information
+}
+
+type ParsedErrorTrace struct {
+	UUID   string
+	Error  string
+	Frames []Output // Ordered oldest to newest
+}
+
+type ParsedLogs struct {
+	Entries []Output
+	Traces  []ParsedErrorTrace
+}
+
+type Parser struct {
+	lines     []string
+	afterDate *time.Time
 }

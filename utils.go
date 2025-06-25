@@ -13,7 +13,7 @@ import (
 // Format: YYYY-MM-DD HH:MM:SS.microseconds
 func getDate() string {
 	ct := time.Now().UTC()
-	return ct.Format("2006-01-02 15:04:05.000000")
+	return ct.Format(TimeLayout)
 }
 
 // fromJson parses a JSON string into an Output struct.
