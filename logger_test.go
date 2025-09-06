@@ -105,6 +105,22 @@ func TestFromMessageSimple(t *testing.T) {
 	internalOutput = ""
 }
 
+func TestFromError_Is(t *testing.T) {
+	err := makeWrapped()
+	if !errors.Is(err, ErrSentinel) {
+		t.Fatalf("expected errors.Is to match ErrSentinel, got %v", err)
+	}
+}
+
+var (
+	ErrSentinel = errors.New("sentinel error")
+)
+
+func makeWrapped() error {
+	// Wrap a sentinel error so we can test errors.Is
+	return FromError(ErrSentinel).WithMessage("wrapped sentinel").Log()
+}
+
 func getInt64FromString(input string) error {
 	var e error
 	_, e = strconv.ParseInt(input, 10, 64)
