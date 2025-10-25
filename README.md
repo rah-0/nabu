@@ -26,20 +26,16 @@ go get github.com/rah-0/nabu
 ```go
 func main() {
     nabu.SetLogLevel(nabu.LevelDebug)
-	
-    nabu.FromMessage("Starting application").WithArgs("version", "1.0.0").WithLevelInfo().Log()
+    nabu.FromMessage("Starting application").WithArgs("version", "1.0.0").Log()
 }
 ```
-Log output:
 ```json
-{"Date":"2025-02-10 21:12:36.388657","Args":["version","1.0.0"],"Msg":"Starting application","Level":1}
+{"UUID":"abc123...","Date":"2025-02-10 21:12:36.388657","Args":["version","1.0.0"],"Msg":"Starting application","Level":1}
 ```
 
-### Logging Errors with Stack Traces
+### Logging Errors
+
 ```go
-func process() error {
-    return errors.New("Something went wrong")
-}
 func main() {
     err := process()
     if err != nil {
@@ -47,47 +43,87 @@ func main() {
     }
 }
 ```
-Log output:
 ```json
-{"UUID":"be985ee7-d3e3-42c8-a9db-4422f1f32e96","Date":"2025-02-10 21:13:57.887870","Error":"Something went wrong","Args":["operation","database"],"Function":"github.com/rah-0/nabu.TestSomething","Line":7,"Level":3}
+{"UUID":"be985ee7...","Date":"2025-02-10 21:13:57.887870","Error":"Something went wrong","Args":["operation","database"],"Function":"main.main","Line":7,"Level":3}
 ```
 
-### Logging a Full Stack Trace chain
+### Error Chains and UUID Correlation
+
+**Wrapping errors preserves the UUID** - all logs in a chain share the same UUID for correlation:
+
 ```go
-// Function C (Deepest in the stack)
-func functionC(userID int, action string) error {
+func functionC() error {
     return errors.New("database connection failed")
 }
-// Function B (Calls functionC and wraps error)
-func functionB(userID int, action string) error {
-    err := functionC(userID, action)
+
+func functionB(userID int) error {
+    err := functionC()
     if err != nil {
-        return nabu.FromError(err).WithArgs(userID, action).Log()
+        return nabu.FromError(err).WithArgs("userID", userID).WithMessage("query failed").Log()
     }
     return nil
 }
-// Function A (Calls functionB and wraps error)
-func functionA(userID int, action string) error {
-    err := functionB(userID, action)
+
+func functionA(userID int) error {
+    err := functionB(userID)
     if err != nil {
-        return nabu.FromError(err).Log()
+        return nabu.FromError(err).WithMessage("operation failed").Log()
     }
     return nil
 }
-func main() {
-    // Set up logging
-    nabu.SetLogLevel(nabu.LevelDebug)
-    nabu.SetLogOutput(nabu.OutputStdout)
-    
-    // Simulate an operation
-    functionA(42, "delete_account")
+```
+```json
+{"UUID":"0a1feb11...","Date":"...","Error":"database connection failed","Args":["userID",42],"Msg":"query failed","Function":"main.functionB","Line":9,"Level":3}
+{"UUID":"0a1feb11...","Date":"...","Msg":"operation failed","Function":"main.functionA","Line":17,"Level":3}
+```
+
+**Key behaviors:**
+- Logs in the same chain share the **same UUID**
+- Use `WithMessage()` to add context at each level
+- Works for both error chains and message chains
+
+### Custom UUIDs for Cross-Service Correlation
+
+Use `WithUuid()` to set a custom UUID for correlating logs across services:
+
+```go
+func handleRequest(traceID string) {
+    err := validateInput()
+    if err != nil {
+        nabu.FromError(err).WithUuid(traceID).WithMessage("validation failed").Log()
+    }
 }
 ```
-Log output:
-```json lines
-{"UUID":"0a1feb11-b250-4790-bad9-3a187df6f0f6","Date":"2025-02-10 21:15:24.790412","Error":"database connection failed","Args":[42,"delete_account"],"Function":"github.com/rah-0/nabu.functionB","Line":9,"Level":3}
-{"UUID":"0a1feb11-b250-4790-bad9-3a187df6f0f6","Date":"2025-02-10 21:15:24.790458","Error":"database connection failed","Function":"github.com/rah-0/nabu.functionA","Line":17,"Level":3}
+```json
+{"UUID":"frontend-trace-12345","Date":"...","Error":"invalid email","Msg":"validation failed","Function":"main.handleRequest","Line":15,"Level":3}
 ```
+
+## API Reference
+
+**Creating Loggers:**
+- `FromError(err error) *Logger` - Create from error (auto-generates UUID)
+- `FromMessage(msg string) *Logger` - Create from message (auto-generates UUID)
+- `New() *Logger` - Create empty logger
+
+**Configuring Loggers:**
+- `WithMessage(msg string)` - Add/update message
+- `WithArgs(args ...any)` - Attach structured data
+- `WithUuid(uuid string)` - Set custom UUID
+- `WithLevel{Debug|Info|Warn|Error|Fatal}()` - Set log level
+- `Log()` - Output the log
+
+**Global Settings:**
+- `SetLogLevel(level Level)` - Set minimum log level
+- `SetLogOutput(output Output)` - Set output (stdout/stderr)
+
+**Log Levels:** `LevelDebug` (1), `LevelInfo` (2), `LevelWarn` (3), `LevelError` (4), `LevelFatal` (5)
+
+## Features
+
+✅ Structured JSON logging  
+✅ Automatic UUID generation for log correlation  
+✅ Error chain tracking with preserved stack traces  
+✅ Custom UUIDs for cross-service correlation  
 
 # ☕ Support
 Enjoying nabu?

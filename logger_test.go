@@ -150,18 +150,18 @@ func TestMixedStack(t *testing.T) {
 		entry2 := fromJson(lines[1])
 		entry3 := fromJson(lines[2])
 
-		// Check first log (Msg only, no UUID since no error)
+		// Check first log (Msg only, has UUID for correlation)
 		if entry1.Msg != "starting operation" {
 			t.Errorf("Entry 1: Expected Msg='starting operation', got '%s'", entry1.Msg)
 		}
 		if entry1.Error != "" {
 			t.Errorf("Entry 1: Expected no Error, got '%s'", entry1.Error)
 		}
-		if entry1.UUID != "" {
-			t.Errorf("Entry 1: Expected no UUID, got '%s'", entry1.UUID)
+		if entry1.UUID == "" {
+			t.Error("Entry 1: Expected UUID to be generated for message")
 		}
 
-		// Check second log (Error occurs here, UUID generated)
+		// Check second log (Error occurs here, different UUID)
 		if entry2.Error != "network timeout" {
 			t.Errorf("Entry 2: Expected Error='network timeout', got '%s'", entry2.Error)
 		}
@@ -171,8 +171,11 @@ func TestMixedStack(t *testing.T) {
 		if entry2.UUID == "" {
 			t.Error("Entry 2: Expected UUID to be generated")
 		}
+		if entry2.UUID == entry1.UUID {
+			t.Error("Entry 2: Expected different UUID from entry 1 (different chain)")
+		}
 
-		// Check third log (wraps Logger, should have same UUID, no Error duplication)
+		// Check third log (wraps Logger, should have same UUID as entry2, no Error duplication)
 		if entry3.Error != "" {
 			t.Errorf("Entry 3: Expected no Error (already logged), got '%s'", entry3.Error)
 		}
@@ -251,20 +254,23 @@ func TestMixedStack(t *testing.T) {
 		entry2 := fromJson(lines[1])
 		entry3 := fromJson(lines[2])
 
-		// Msg only
-		if entry1.UUID != "" {
-			t.Errorf("Entry 1: Expected no UUID for message-only log, got '%s'", entry1.UUID)
+		// Msg only (has UUID)
+		if entry1.UUID == "" {
+			t.Error("Entry 1: Expected UUID for message log")
 		}
 
-		// First error
+		// First error (different UUID from message)
 		if entry2.Error != "config error" {
 			t.Errorf("Entry 2: Expected Error='config error', got '%s'", entry2.Error)
 		}
 		if entry2.UUID == "" {
 			t.Error("Entry 2: Expected UUID to be generated")
 		}
+		if entry2.UUID == entry1.UUID {
+			t.Error("Entry 2: Expected different UUID from entry 1 (different chain)")
+		}
 
-		// Wrapping the error
+		// Wrapping the error (same UUID as error)
 		if entry3.Error != "" {
 			t.Errorf("Entry 3: Expected no Error, got '%s'", entry3.Error)
 		}
@@ -296,12 +302,13 @@ func TestMixedStack(t *testing.T) {
 			entries[i] = fromJson(lines[i])
 		}
 
-		// Entry 0: Msg only, no UUID
-		if entries[0].UUID != "" {
-			t.Error("Entry 0: Expected no UUID")
+		// Entry 0: Msg only, has UUID
+		uuid0 := entries[0].UUID
+		if uuid0 == "" {
+			t.Error("Entry 0: Expected UUID for message")
 		}
 
-		// Entry 1: First error, UUID generated
+		// Entry 1: First error, UUID generated (different from message)
 		if entries[1].Error != "error A" {
 			t.Errorf("Entry 1: Expected Error='error A', got '%s'", entries[1].Error)
 		}
@@ -309,8 +316,11 @@ func TestMixedStack(t *testing.T) {
 		if uuid1 == "" {
 			t.Error("Entry 1: Expected UUID")
 		}
+		if uuid1 == uuid0 {
+			t.Error("Entry 1: Expected different UUID from entry 0 (different chain)")
+		}
 
-		// Entry 2: Wraps error, same UUID, no Error
+		// Entry 2: Wraps error, same UUID as entry 1, no Error
 		if entries[2].Error != "" {
 			t.Errorf("Entry 2: Expected no Error, got '%s'", entries[2].Error)
 		}
@@ -318,12 +328,16 @@ func TestMixedStack(t *testing.T) {
 			t.Error("Entry 2: Expected same UUID as entry 1")
 		}
 
-		// Entry 3: New message, no UUID
-		if entries[3].UUID != "" {
-			t.Error("Entry 3: Expected no UUID")
+		// Entry 3: New message, has UUID (different from previous chains)
+		uuid3 := entries[3].UUID
+		if uuid3 == "" {
+			t.Error("Entry 3: Expected UUID for message")
+		}
+		if uuid3 == uuid0 || uuid3 == uuid1 {
+			t.Error("Entry 3: Expected different UUID from previous entries (new chain)")
 		}
 
-		// Entry 4: New error, new UUID
+		// Entry 4: New error, new UUID (different from all previous)
 		if entries[4].Error != "error B" {
 			t.Errorf("Entry 4: Expected Error='error B', got '%s'", entries[4].Error)
 		}
@@ -331,8 +345,8 @@ func TestMixedStack(t *testing.T) {
 		if uuid2 == "" {
 			t.Error("Entry 4: Expected UUID")
 		}
-		if uuid2 == uuid1 {
-			t.Error("Entry 4: Expected different UUID from entry 1")
+		if uuid2 == uuid0 || uuid2 == uuid1 || uuid2 == uuid3 {
+			t.Error("Entry 4: Expected different UUID from all previous entries (new error chain)")
 		}
 	})
 }

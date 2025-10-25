@@ -17,6 +17,7 @@ func New() *Logger {
 // FromError creates a Logger instance from an error.
 // If the error is nil, an empty Logger is returned.
 // If the error is a *Logger, its UUID is preserved to maintain the error chain.
+// If the wrapped Logger has no UUID, a new one is generated for the chain.
 // Otherwise, a new UUID is generated for tracking related logs.
 func FromError(e error) *Logger {
 	x := New()
@@ -31,7 +32,12 @@ func FromError(e error) *Logger {
 
 	var ex *Logger
 	if errors.As(e, &ex) {
-		x.UUID = ex.UUID
+		// Preserve UUID from the wrapped Logger, or generate one if it doesn't have one
+		if ex.UUID != "" {
+			x.UUID = ex.UUID
+		} else {
+			x.UUID = uuid.NewString()
+		}
 	} else {
 		x.UUID = uuid.NewString()
 	}
@@ -41,11 +47,13 @@ func FromError(e error) *Logger {
 
 // FromMessage creates a Logger instance from a message string.
 // The default log level is set to LevelInfo.
+// A UUID is generated for correlation purposes.
 func FromMessage(msg string) *Logger {
 	x := New()
 	x.origin = originMessage
 	x.Level = LevelInfo
 	x.Msg = msg
+	x.UUID = uuid.NewString()
 	return x
 }
 
