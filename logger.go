@@ -62,6 +62,13 @@ func (x *Logger) WithMessage(msg string) *Logger {
 	return x
 }
 
+// WithUuid sets a custom UUID for the log entry.
+// This is useful for correlating logs across different services or from external sources.
+func (x *Logger) WithUuid(uuid string) *Logger {
+	x.UUID = uuid
+	return x
+}
+
 // WithLevelDebug sets the log level to Debug.
 func (x *Logger) WithLevelDebug() *Logger {
 	x.Level = LevelDebug
@@ -136,7 +143,16 @@ func (x *Logger) Log() error {
 		Level: x.Level,
 	}
 	if x.CausedBy != nil {
-		o.Error = x.CausedBy.Error()
+		// Only show the immediate error, not the full chain
+		// This prevents error duplication across the stack
+		var loggerErr *Logger
+		if errors.As(x.CausedBy, &loggerErr) {
+			// CausedBy is a Logger - don't show its error in this log
+			// The error was already logged when that Logger was created
+		} else {
+			// CausedBy is a regular error - show it
+			o.Error = x.CausedBy.Error()
+		}
 	}
 	if x.enableStackTrace {
 		o.Function, o.Line = x.getFirstTrace()

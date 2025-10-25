@@ -5,6 +5,10 @@ import (
 )
 
 func TestShouldLog(t *testing.T) {
+	// Save the current log level and restore it after the test
+	originalLevel := logLevel
+	defer SetLogLevel(originalLevel)
+
 	levels := []LogLevel{LevelDebug, LevelInfo, LevelWarn, LevelError, LevelFatal}
 
 	// Test with default LevelDebug (should allow all levels)
